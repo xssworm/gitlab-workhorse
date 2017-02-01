@@ -1,0 +1,227 @@
+# Changelog for gitlab-workhorse
+
+Formerly known as 'gitlab-git-http-server'.
+
+v1.3.0
+
+- Fix stalled HTTP fetches with large payloads. !110
+- Correctly parse content types in HTTP requests and responses !114
+- Catch _all_ multipart NextPart() errors. !108
+- Replace 'gitlab_workhorse_artifacts_upload_*' with labeled version of
+  'gitlab_workhorse_multipart_upload_*'. !106
+- Allow GET /info/refs to be proxied to Gitaly. !105
+- Set correct value of X-Forwarded-For header in PreAuthorize request. !104
+- Allow nested namespaces in git URLs. !80
+
+v1.2.1
+
+- More Prometheus metrics
+- Hide 502 internal errors from text-mode clients
+- Buffer internal API responses up to a 32kB hard limit
+
+v1.2.0
+
+- Add terminal websocket proxy endpoint
+- Rewrite all incoming multipart requests: write 'file' parts to tempfiles
+
+v1.1.1
+
+- Restrict effect of API rate limiting to /ci/api/v1/builds/register.json
+
+v1.1.0
+
+- Prometheus metrics listener via `-prometheusListenAddr` option
+- Tell NGINX to not buffer Git HTTP responses etc. with X-Accel-Buffering
+- Fix double content type bug on archive downloads
+
+v1.0.0
+
+- Workhorse is now v1.0.0, according to Semantic Versioning. No breaking
+  changes were made.
+- Add support for logging to file, and logfile rotation with SIGHUP.
+- Improve error messages.
+
+v0.8.5
+
+Simplify revspec for 'git format-patch'.
+
+v0.8.4
+
+Fix Go 1.5 compatibility broken in 0.8.3. Update CI configuration so
+that tests run on Go 1.5, 1.6 and 1.7 (was only 1.6 before).
+
+v0.8.3
+
+Add rate-limiting feature for /api requests (disabled by default).
+Suppress non-zero exit code error from git-upload-pack during shallow
+Git clone (only affects logging and Sentry). Don't treat EEXIST as an
+error during git archive finalization.
+
+v0.8.2
+
+Recognize more archive formats in git.SendArchive. Make 502 errors
+(failed proxy requests to Unicorn) easier to recognize in Sentry.
+
+v0.8.1
+
+Add Sentry (raven-go) for remote error tracking.
+
+v0.8.0
+
+Add JWT signed communication between gitlab-workhorse and gitlab-rails.
+
+v0.7.11
+
+Fix 'nil dereference' crash on Go 1.7 when parsing authBackend
+parameter. Fix 'hard-wire backend host' crashes.
+
+v0.7.10
+
+Fix typo in metrics header name.
+
+v0.7.9
+
+Hard-wire backend host when using TCP.
+
+v0.7.8
+
+Send artifact zip file entries via the 'senddata' mechanism.
+
+v0.7.7
+
+Add the protocol used (HTTP) to each gitCommand call in order to check
+for restricted protocol access on GitLab's side.
+
+v0.7.6
+
+Add the capability to inject `git format-patch` output.
+
+v0.7.5
+
+Add the capability to inject `git diff` output as HTTP response bodies
+(@zj).
+
+v0.7.4
+
+Pass a timestamp when forwarding requests to Rails. Hopefully this
+will give us insight into Unicorn queueing behavior.
+
+v0.7.3
+
+Revert 'buffer Git HTTP responses'. Set default listen socket
+permissions to world read/writeable.
+
+v0.7.2 DO NOT USE
+
+Integrate with GOPATH during development (remove relative imports
+etc.). Buffer Git HTTP responses so that we may return an error if the
+local command fails early.
+
+Update: the 'buffer Git HTTP responses' change in 0.7.2 is BAD, it
+breaks shallow Git clone. Don't use 0.7.2!
+
+v0.7.1
+
+Set Content-Length (retrieved from Git) on raw blob data responses.
+
+v0.7.0
+
+Start using a 'v' prefix on the version string.
+
+0.6.5
+
+Inject 'git archive' data the same way as Git blob data.
+
+0.6.4
+
+Increase default ProxyHeadersTimeout to 5 minutes. Fix injecting raw
+blobs for /api/v3 requetsts.
+
+0.6.3
+
+Add support for sending Git raw git blobs via gitlab-workhorse.
+
+0.6.2
+
+We now fill in missing directory entries in archize zip metadata
+files; also some other minor changes.
+
+0.6.1
+
+Add support for generating zip artifacts metadata and serving single
+files from zip archives.
+
+Gitlab-workhorse now consists of multiple executables. We also fixed a
+routing bug introduced by the 0.6.0 refactor that broke relative URL
+support.
+
+0.6.0
+
+Overhauled the source code organization; no user-facing changes
+(intended). The application code is now split into Go 'packages'
+(modules). As of 0.6.0 gitlab-workhorse requires Go 1.5 or newer.
+
+0.5.4
+
+Fix /api/v3/projects routing bug introduced in 0.5.2-0.5.3.
+
+0.5.3
+
+Fixes merge error in 0.5.2.
+
+0.5.2 (broken!)
+
+- Always check with upstream if files in /uploads/ may be served
+- Fix project%2Fnamespace API project ID's
+- Prevent archive zombies when using gzip or bzip2
+- Don't show pretty error pages in development mode
+
+0.5.1
+
+Deprecate -relativeURLRoot option, use -authBackend instead.
+
+0.5.0
+
+Send ALL GitLab requests through gitlab-workhorse.
+
+0.4.2
+
+Return response to client when uploading Git LFS object.
+
+0.4.1
+
+Add support for Build Artifacts and Git LFS. The GitLab-Workhorse
+offloads file uploading and downloading by providing support for
+rewriting multipart form data and X-Sendfile.
+
+Other changes:
+- add header Gitlab-Workhorse to all requests to indicate from where
+  they originated
+
+0.4.0
+
+Rename the project to gitlab-workhorse. The old name had become too
+specific.
+
+Other changes:
+
+- pass LD_LIBRARY_PATH to Git commands
+- accomodate broken HTTP clients by spelling 'Www-Authenticate' as
+  'WWW-Authenticate'
+
+0.3.1
+
+Add support for Unix domain socket connections to the authBackend.
+
+0.3.0
+
+In 0.3.0 we also handle 'git archive' downloads for GitLab 8.1+.
+This has lead to some breaking API changes, making 0.3.0 incompatible
+with GitLab 8.0.  We now expect the 'auth backend' (GitLab) to
+provide us with much more information about each request, such as
+the path on disk to the Git repository the client is requesting.
+This makes the REPO_ROOT command line argument obsolete.
+
+0.2.14
+
+This is the last version that works with GitLab 8.0.
